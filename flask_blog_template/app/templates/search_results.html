@@ -7,7 +7,7 @@
       {% for post in results %}
         <div class="col-sm-6">
           <!-- Wrap the entire card content with an anchor tag -->
-          <a href="{{ url_for('main.post_detail', post_id=post.id) }}" style="text-decoration: none; color: inherit;">
+          <a href="{{ url_for('main.post', post_id=post.id) }}" style="text-decoration: none; color: inherit;">
             <div class="card" style="width: 18rem;">
               <!-- Display the hero image -->
               <img class="card-img-top" src="{{ post.images[0].image_url }}" alt="Card image cap">

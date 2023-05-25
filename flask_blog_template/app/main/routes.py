@@ -1,5 +1,5 @@
 # Import necessary modules from flask
-from flask import render_template
+from flask import render_template, request
 from flask import jsonify
 from . import bp  # Import the blueprint we created in __init__.py
 from .models import Post  # Import the Post model from the models module
@@ -57,12 +57,12 @@ def load_more(page):
 def not_found_error(error):
     """Render a custom 404 error page."""
     return render_template('404.html'), 404
-''' 
+
 @bp.app_errorhandler(500)
 def internal_error(error):
     """Render a custom 500 error page."""
     db.session.rollback()  # rollback the session in case of database errors
     return render_template('500.html'), 500 
-    '''
+
 
 
