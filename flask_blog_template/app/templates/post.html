@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="post-detail">
+            <!-- Display the hero image -->
+            <img src="{{ post.images[0].image_url }}" alt="Hero image for {{ post.title }}">
+
+            <!-- Display the post title -->
+            <h1>{{ post.title }}</h1>
+
+            <!-- Display the post date -->
+            <p>{{ post.date.strftime('%B %d, %Y') }}</p>
+
+            <!-- Display the post description -->
+            <div class="post-content">
+                {{ post.description | safe }}
+            </div>
+            
+            <!-- Display the other images -->
+            {% for image in post.images[1:] %}
+                <img src="{{ image.image_url }}" alt="Image for {{ post.title }}">
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

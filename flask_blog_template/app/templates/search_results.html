@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container">
+    <h1>Search Results for "{{ query }}"</h1>
+    <div class="row">
+      {% for post in results %}
+        <div class="col-sm-6">
+          <!-- Wrap the entire card content with an anchor tag -->
+          <a href="{{ url_for('main.post_detail', post_id=post.id) }}" style="text-decoration: none; color: inherit;">
+            <div class="card" style="width: 18rem;">
+              <!-- Display the hero image -->
+              <img class="card-img-top" src="{{ post.images[0].image_url }}" alt="Card image cap">
+
+              <div class="card-body">
+                <!-- Display the post title -->
+                <h5 class="card-title">{{ post.title }}</h5>
+
+                <!-- Display the post date -->
+                <p class="card-text">{{ post.date.strftime('%B %d, %Y') }}</p>
+
+                <!-- Display the post description -->
+                <p class="card-text">{{ post.description }}</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
