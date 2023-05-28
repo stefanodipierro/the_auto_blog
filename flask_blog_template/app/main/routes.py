@@ -2,7 +2,7 @@
 from flask import render_template, request
 from flask import jsonify
 from . import bp  # Import the blueprint we created in __init__.py
-from .models import Post  # Import the Post model from the models module
+from .models import Post, Image  # Import the Post model from the models module
 from app import db
 
 # Define the route for the homepage
@@ -63,6 +63,41 @@ def internal_error(error):
     """Render a custom 500 error page."""
     db.session.rollback()  # rollback the session in case of database errors
     return render_template('500.html'), 500 
+
+#API Endpoints
+
+@bp.route('/api/posts', methods=['POST'])
+def create_post():
+    data = request.get_json() or {}
+    post = Post()
+    post.from_dict(data)
+    db.session.add(post)
+    db.session.commit()
+    response = jsonify({"message": "Post created successfully", "id": post.id})
+    response.status_code = 201
+    return response
+
+@bp.route('/api/posts', methods=['GET'])
+def get_posts():
+    """Retrieve all blog posts."""
+    posts = Post.query.all()  # Query the database for all posts
+    return jsonify([post.to_dict() for post in posts])  # Return the posts as a JSON array
+
+# API to get 1 post only 
+
+@bp.route('/api/posts/<int:post_id>', methods=['GET'])
+def get_post(post_id):
+    # Query the database for the post with the provided id
+    post = Post.query.get_or_404(post_id)
+
+    # Convert the Post object to a dict
+    post_dict = post.to_dict()
+
+    # Return the post details as JSON
+    return jsonify(post_dict), 200
+
+
+
 
 
 
