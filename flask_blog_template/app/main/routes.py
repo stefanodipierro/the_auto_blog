@@ -2,8 +2,10 @@
 from flask import render_template, request
 from flask import jsonify
 from . import bp  # Import the blueprint we created in __init__.py
-from .models import Post, Image  # Import the Post model from the models module
+from .models import Post, Image, User  # Import the Post model from the models module
 from app import db
+from .auth import auth
+
 
 # Define the route for the homepage
 @bp.route('/')
@@ -67,6 +69,8 @@ def internal_error(error):
 #API Endpoints
 
 @bp.route('/api/posts', methods=['POST'])
+@auth.login_required
+
 def create_post():
     data = request.get_json() or {}
     post = Post()
@@ -78,23 +82,68 @@ def create_post():
     return response
 
 @bp.route('/api/posts', methods=['GET'])
+@auth.login_required
+
 def get_posts():
     """Retrieve all blog posts."""
     posts = Post.query.all()  # Query the database for all posts
     return jsonify([post.to_dict() for post in posts])  # Return the posts as a JSON array
 
-# API to get 1 post only 
+# API to get 1 post only or delete, I had to merge the 2 endpoints for a 405 error
 
-@bp.route('/api/posts/<int:post_id>', methods=['GET'])
-def get_post(post_id):
+@bp.route('/api/posts/<int:post_id>', methods=['GET', 'DELETE'])
+@auth.login_required
+
+def handle_post(post_id):
     # Query the database for the post with the provided id
     post = Post.query.get_or_404(post_id)
 
-    # Convert the Post object to a dict
-    post_dict = post.to_dict()
+    if request.method == 'GET':
+        # Convert the Post object to a dict
+        post_dict = post.to_dict()
 
-    # Return the post details as JSON
-    return jsonify(post_dict), 200
+        # Return the post details as JSON
+        return jsonify(post_dict), 200
+
+    elif request.method == 'DELETE':
+        db.session.delete(post)
+        db.session.commit()
+
+        return jsonify({'message': 'Post deleted successfully'}), 200
+    
+
+# registration and login endpoints
+
+
+@bp.route('/register', methods=['POST'])
+def register():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if username is None or password is None:
+        abort(400)    # missing arguments
+    if User.query.filter_by(username=username).first() is not None:
+        abort(400)    # existing user
+    user = User(username=username)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    token = user.generate_auth_token(3600)
+    return jsonify({'token': token.decode('ascii'), 'duration': 3600}), 201
+
+@bp.route('/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if username is None or password is None:
+        abort(400)    # missing arguments
+    user = User.query.filter_by(username=username).first()
+    if user is None or not user.check_password(password):
+        abort(400)    # invalid credentials
+    token = user.generate_auth_token(3600)
+    return jsonify({'token': token.decode('ascii'), 'duration': 3600}), 200
+
+
+
 
 
 

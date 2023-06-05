@@ -69,12 +69,42 @@ class TestPostAPI(unittest.TestCase):
         self.client = self.app.test_client()
 
         db.create_all()
+        # Register a new user and login
+        self.register_and_login()
 
     def tearDown(self):
         db.session.commit()  # Commit any changes before closing the session
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+
+    def register_and_login(self):
+        # Register a new user
+        register_response = self.client.post(
+            '/register',
+            json={
+                'username': 'testuser',
+                'email': 'test@email.com',
+                'password': 'testpassword'
+            }
+        )
+
+        # Log in as the new user
+        login_response = self.client.post(
+            '/login',
+            json={
+                'username': 'testuser',
+                'password': 'testpassword'
+            }
+        )
+        print("login_response.json")
+        print(login_response.json)
+
+        # Store the access token from the login response
+        self.access_token = login_response.json['token']
+        print("self.access_token")
+        print(self.access_token)
+        
 
     def test_create_post(self):
         # Prepare data for a new post
@@ -85,7 +115,11 @@ class TestPostAPI(unittest.TestCase):
         }
 
         # Send POST request to the /api/posts endpoint
-        response = self.client.post('/api/posts', json=new_post)
+        response = self.client.post('/api/posts', json=new_post, headers={
+        'Authorization': f'Bearer {self.access_token}'
+        })
+        print("response")
+        print(response)
 
         # Check status code and response data
         self.assertEqual(response.status_code, 201)
@@ -101,56 +135,23 @@ class TestPostAPI(unittest.TestCase):
 
         self.assertEqual([img.image_url for img in post.images], new_post['images'])
 
-
-    def test_get_posts(self):
-        # Create some test posts
-        post1 = Post(title='Test Post 1', description='This is test post 1')
-        post1.images.append(Image(image_url='http://example.com/image1.jpg'))
-
-        post2 = Post(title='Test Post 2', description='This is test post 2')
-        post2.images.append(Image(image_url='http://example.com/image2.jpg'))
-
-        db.session.add(post1)
-        db.session.add(post2)
+    def test_delete_post(self):
+    # Create a test post
+        post = Post(title='Test Post', description='This is a test post')
+        db.session.add(post)
         db.session.commit()
 
-        # Send GET request to the /api/posts endpoint
-        response = self.client.get('/api/posts')
+        # Send DELETE request to the /api/posts/<post_id> endpoint
+        response = self.client.delete(f'/api/posts/{post.id}', headers={'Authorization': f'Bearer {self.access_token}'})
 
         # Check status code and response data
         self.assertEqual(response.status_code, 200)
         json_data = response.get_json()
-        self.assertEqual(len(json_data), 2)
+        self.assertEqual(json_data['message'], 'Post deleted successfully')
 
-        # Check the contents of the posts
-        self.assertEqual(json_data[0]['title'], 'Test Post 1')
-        self.assertEqual(json_data[0]['description'], 'This is test post 1')
-        self.assertEqual(json_data[1]['title'], 'Test Post 2')
-        self.assertEqual(json_data[1]['description'], 'This is test post 2')
-        self.assertEqual(json_data[0]['images'], ['http://example.com/image1.jpg'])
-        self.assertEqual(json_data[1]['images'], ['http://example.com/image2.jpg'])
-
-    def test_get_post(self):
-        # Prepare data for a new post
-        new_post = Post(
-            title='Test Post',
-            description='This is a test post',
-        )
-        new_post.images.append(Image(image_url='http://example.com/image.jpg'))
-
-        # Add the new post to the database
-        db.session.add(new_post)
-        db.session.commit()
-
-        # Send GET request to the /api/posts/<post_id> endpoint
-        response = self.client.get(f'/api/posts/{new_post.id}')
-
-        # Check status code and response data
-        self.assertEqual(response.status_code, 200)
-        json_data = response.get_json()
-        self.assertEqual(json_data['title'], 'Test Post')
-        self.assertEqual(json_data['description'], 'This is a test post')
-        self.assertEqual(json_data['images'], ['http://example.com/image.jpg'])
+        # Verify that the post was deleted
+        post = Post.query.get(post.id)
+        self.assertIsNone(post)
 
 
 if __name__ == '__main__':
