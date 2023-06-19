@@ -4,7 +4,12 @@
     <div class="container">
         <div class="post-detail">
             <!-- Display the hero image -->
-            <img src="{{ post.images[0].image_url }}" alt="Hero image for {{ post.title }}">
+            {% if post.images %}
+              <img src="{{ post.images[0].image_url }}" alt="Hero image for {{ post.title }}">
+            {% else %}
+              <!-- Display a default image if no images are present -->
+              <img src="{{ url_for('static', filename='default.png') }}" alt="Hero image for {{ post.title }}">
+            {% endif %}
 
             <!-- Display the post title -->
             <h1>{{ post.title }}</h1>

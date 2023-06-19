@@ -1,12 +1,9 @@
 # auth.py
-from flask_httpauth import HTTPTokenAuth
 from .models import User
+from app import login_manager  # Import login_manager from app
 
-auth = HTTPTokenAuth(scheme='Bearer')
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-@auth.verify_token
-def verify_token(token):
-    user = User.verify_auth_token(token)
-    if user:
-        return user
 
