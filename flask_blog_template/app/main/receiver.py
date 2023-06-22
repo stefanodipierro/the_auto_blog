@@ -1,15 +1,10 @@
 import requests
 import json
-import numpy as np
 import time
-import pandas as pd
 from PIL import Image
 import os
-import re
 from datetime import datetime
-import glob
-import argparse
-import sys
+
 
 class Receiver:
 
