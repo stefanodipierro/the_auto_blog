@@ -12,4 +12,5 @@ class Config:
 class TestConfig(Config):
     # Your testing database URI
     SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
-    SECRET_KEY = ''
+    SECRET_KEY = 'vX6kUc4Z7pR4cL8aC3kZ7pR8vN2dP6xZ'
+    OPENAI_API_KEY = ''

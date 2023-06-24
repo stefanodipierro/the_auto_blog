@@ -5,6 +5,7 @@ from app.main.models import Post
 from flask import session, jsonify, current_app
 from .sender import Sender
 from .receiver import Receiver
+import os
 
 
 def generate_titles(num_articles, topic):
@@ -62,7 +63,7 @@ def generate_images(title):
             {"role": "system", "content": "You are a helpful assistant that generates image descriptions."},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=1000
+        max_tokens=100
         
     )
 
@@ -85,10 +86,17 @@ def generate_and_save_articles():
 
         for title in titles:
             description = generate_article(title)
+            print('article generated')
             images_prompt = generate_images(title)
-            Sender.send(prompt=images_prompt)
-            receiver = Receiver(directory = 'flask_blog_template\app\static')
+            print('image prompt generated')
+            sender = Sender()
+            sender.send(prompt=images_prompt)
+            print('sent to mid api')
+            receiver = Receiver(directory='app/static')
             url, filename = receiver.collecting_result(image_prompt= images_prompt)
             images_path_list = receiver.download_image(url, filename)
+            print('images downloaded')
+            print(images_path_list)
 
             create_post(title, description, images_path_list)
+            print('post created')

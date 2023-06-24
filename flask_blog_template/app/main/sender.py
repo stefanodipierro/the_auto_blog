@@ -4,13 +4,17 @@ import time
 import re
 import argparse
 import sys
+import os
+
 
 class Sender:
 
     def __init__(self, 
-                 params = 'flask_blog_template\app\main\sender_params.json'):
+                 params = 'app/main/sender_params.json'):
         
         self.params = params
+        print("Current working directory:", os.getcwd())  # Print the current working directory
+
         self.sender_initializer()
 
     def sender_initializer(self):

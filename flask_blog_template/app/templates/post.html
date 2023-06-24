@@ -5,11 +5,11 @@
         <div class="post-detail">
             <!-- Display the hero image -->
             {% if post.images %}
-              <img src="{{ post.images[0].image_url }}" alt="Hero image for {{ post.title }}">
+            <img src="{{ url_for('static', filename='output/' + post.images[0].image_url) }}" alt="Hero image for {{ post.title }}">
             {% else %}
-              <!-- Display a default image if no images are present -->
-              <img src="{{ url_for('static', filename='default.png') }}" alt="Hero image for {{ post.title }}">
-            {% endif %}
+            <!-- Display a default image if no images are present -->
+            <img src="{{ url_for('static', filename='default.png') }}" alt="Hero image for {{ post.title }}">
+            {% endif %} 
 
             <!-- Display the post title -->
             <h1>{{ post.title }}</h1>
@@ -24,7 +24,7 @@
             
             <!-- Display the other images -->
             {% for image in post.images[1:] %}
-                <img src="{{ image.image_url }}" alt="Image for {{ post.title }}">
+                <img src="{{ url_for('static', filename= 'output/' + image.image_url) }}" alt="Image for {{ post.title }}">
             {% endfor %}
         </div>
     </div>

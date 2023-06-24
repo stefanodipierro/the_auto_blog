@@ -10,10 +10,10 @@
             <div class="card" style="width: 18rem;">
               <!-- Display the hero image -->
               {% if post.images %}
-              <img class="card-img-top" src="{{ post.images[0].image_url }}" alt="Card image cap">
+                <img src="{{ url_for('static', filename= 'output/' + post.images[0].image_url) }}" alt="Hero image for {{ post.title }}">
               {% else %}
-              <!-- Handle the case where no images are present. For example, you could display a default image: -->
-              <img class="card-img-top" src="{{ url_for('static', filename='default.png') }}" alt="Card image cap">
+                <!-- Display a default image if no images are present -->
+                <img src="{{ url_for('static', filename='default.png') }}" alt="Hero image for {{ post.title }}">
               {% endif %}
             
               <div class="card-body">
