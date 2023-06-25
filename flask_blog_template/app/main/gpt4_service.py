@@ -11,12 +11,12 @@ import os
 def generate_titles(num_articles, topic):
     openai.api_key = current_app.config['OPENAI_API_KEY']
 
-    prompt = f"Generate {num_articles} blog post titles about {topic}"
+    prompt = f"Generate {num_articles} number of titles for blog posts about {topic}"
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",  # Use the GPT-3.5 model
         messages=[
-            {"role": "system", "content": f"You are a helpful assistant that generates blog post titles."},
+            {"role": "system", "content": "You are an advanced AI assistant specialized in generating creative and unique blog post titles. Consider the topic at hand and think about engaging, relevant titles that would attract readers. Try to vary the structure and style of each title for diversity."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=1000
@@ -24,6 +24,10 @@ def generate_titles(num_articles, topic):
 
     # The generated titles are in the 'choices' list in the response. We split them by newline character.
     titles = response['choices'][0]['message']['content'].split('\n')
+    # Remove bullet points
+    titles = [title.split('. ', 1)[-1] for title in titles if title.strip() != '']
+    titles = [title.strip('"') for title in titles]
+    print(titles)
     return titles
 
 def create_post(title, description, image_path_list):
@@ -38,32 +42,39 @@ def create_post(title, description, image_path_list):
 def generate_article(title):
     openai.api_key = current_app.config['OPENAI_API_KEY']
 
-    prompt = f"Write an article about {title}"
-
+    prompt = f"Write an article about {title}. The article should be at least 2000 words long."
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",  # Use the GPT-3.5 model
+        model="gpt-3.5-turbo-16k",  # Use the GPT-3.5 model
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that writes blog articles."},
+            {"role": "system", "content": "You are an intelligent AI assistant with expertise in generating informative, engaging, and well-structured blog articles. Each article should provide value to the reader, be coherent and well-organized, and use a style and tone appropriate for a blog audience. Remember to include a strong introduction and conclusion."},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=4000
+        max_tokens=10000
     )
 
     # The generated article is in the 'choices' list in the response
     article = response['choices'][0]['message']['content']
     return article
+
+def wrap_paragraphs(article):
+    paragraphs = article.split("\n")  # Split the text into paragraphs at newline characters
+    wrapped_paragraphs = [f"<p>{p.strip()}</p>" for p in paragraphs if p.strip()]  # Wrap each paragraph in <p> tags
+    return "\n".join(wrapped_paragraphs)  # Join the paragraphs back together, separated by newlines
+
+    description = wrap_paragraphs(description)
+
 def generate_images(title):
     openai.api_key = current_app.config['OPENAI_API_KEY']
 
     prompt = f"Generate image description for an article titled '{title}'"
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",  # Use the GPT-3.5 model
+        model="gpt-3.5-turbo-0613",  # Use the GPT-3.5 model
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that generates image descriptions."},
+            {"role": "system", "content": "You are an advanced AI assistant, specializing in creating detailed and comprehensive descriptions of images. Your task is to capture all the significant elements in the image, from the colors and shapes to the emotions and actions depicted. Be as specific and descriptive as possible, conveying the overall mood and atmosphere of the image. Remember to consider the potential cultural, historical, or symbolic significance of elements in the image. Your descriptions should help someone who cannot see the image understand its content and feel its impact."},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=100
+        max_tokens=50
         
     )
 
@@ -85,8 +96,9 @@ def generate_and_save_articles():
         titles = generate_titles(num_articles , topic)
 
         for title in titles:
-            description = generate_article(title)
-            print('article generated')
+            string_description = generate_article(title)
+            description = wrap_paragraphs(string_description)
+
             images_prompt = generate_images(title)
             print('image prompt generated')
             sender = Sender()
@@ -105,3 +117,4 @@ def generate_and_save_articles():
                 flash(f"Error: {str(e)}")
                 # You might want to break the loop here, or continue with the next iteration.
                 # It depends on how you want your application to behave in case of error.
+    return None

@@ -4,10 +4,10 @@
   <div class="container">
     <div class="row">
       {% for post in posts %}
-        <div class="col-sm-6">
+        <div class="col-lg-4 col-md-6 col-sm-12">
           <!-- Wrap the entire card content with an anchor tag -->
           <a href="{{ url_for('main.post', post_id=post.id) }}" style="text-decoration: none; color: inherit;">
-            <div class="card" style="width: 18rem;">
+            <div class="card">
               <!-- Display the hero image -->
               {% if post.images %}
                 <img src="{{ url_for('static', filename= 'output/' + post.images[0].image_url) }}" alt="Hero image for {{ post.title }}">
@@ -23,8 +23,7 @@
                 <!-- Display the post date -->
                 <p class="card-text">{{ post.date.strftime('%B %d, %Y') }}</p>
 
-                <!-- Display the post description -->
-                <p class="card-text">{{ post.description }}</p>
+  
               </div>
             </div>
           </a>

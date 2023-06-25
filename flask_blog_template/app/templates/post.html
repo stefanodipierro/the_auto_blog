@@ -3,6 +3,8 @@
 {% block content %}
     <div class="container">
         <div class="post-detail">
+            <!-- Display the post title -->
+            <h1>{{ post.title }}</h1>
             <!-- Display the hero image -->
             {% if post.images %}
             <img src="{{ url_for('static', filename='output/' + post.images[0].image_url) }}" alt="Hero image for {{ post.title }}">
@@ -11,8 +13,7 @@
             <img src="{{ url_for('static', filename='default.png') }}" alt="Hero image for {{ post.title }}">
             {% endif %} 
 
-            <!-- Display the post title -->
-            <h1>{{ post.title }}</h1>
+
 
             <!-- Display the post date -->
             <p>{{ post.date.strftime('%B %d, %Y') }}</p>
@@ -23,9 +24,10 @@
             </div>
             
             <!-- Display the other images -->
-            {% for image in post.images[1:] %}
-                <img src="{{ url_for('static', filename= 'output/' + image.image_url) }}" alt="Image for {{ post.title }}">
-            {% endfor %}
+            {% if post.images|length > 1 %}
+            <img src="{{ url_for('static', filename= 'output/' + post.images[1].image_url) }}" alt="Image for {{ post.title }}">
+            {% endif %}
+            
         </div>
     </div>
 {% endblock %}
