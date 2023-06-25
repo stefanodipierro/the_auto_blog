@@ -39,9 +39,11 @@ class Receiver:
 
     def collecting_result(self, image_prompt):
         normalized_image_prompt = self.normalize_prompt(image_prompt)
+        max_attempts = 10  # Set the maximum number of attempts
+        attempt = 0  # Initialize the attempt counter
         
 
-        while True: # Keep looping until a suitable message is found
+        while attempt < max_attempts:  # Keep looping until a suitable message is found or max_attempts is reached
             message  = self.retrieve_messages()
             
 
@@ -62,8 +64,9 @@ class Receiver:
                             url = message['attachments'][0]['url']
                             filename = message['attachments'][0]['filename']
                             return url, filename # If a suitable message is found, return url and filename
-                    
+            attempt += 1  # Increment the attempt counter        
             time.sleep(60) # If a suitable message isn't found, wait for 30 seconds before trying again
+        raise Exception("Max attempts reached without finding a suitable message")  # Raise an error if max_attempts is reached
 
     def split_image(self, image_file):
         with Image.open(image_file) as im:

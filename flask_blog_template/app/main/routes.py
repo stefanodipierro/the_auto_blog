@@ -147,6 +147,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user is None or not user.check_password(password):
             # invalid credentials, you can flash a message here to let the user know
+            flash('Invalid username or password', 'error') # Add this line to flash a message
             return render_template('login.html', form=form)
         login_user(user)
         return redirect(url_for('main.creator'))
@@ -170,8 +171,11 @@ def creator():
         topic = form.topic.data
         session['creator_data'] = {'num_articles': num_articles, 'topic': topic}
         # Avvia la generazione e il salvataggio degli articoli
-        generate_and_save_articles()
-        flash('Your articles are being generated. You will be notified by email.')
+        try:
+            generate_and_save_articles()
+            flash('Your articles are generated.')
+        except Exception as e:
+            flash(f"Error: {str(e)}")
         return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
     return render_template('creator.html', content_form=form)
 

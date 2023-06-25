@@ -2,7 +2,7 @@
 import openai
 from app import db
 from app.main.models import Post
-from flask import session, jsonify, current_app
+from flask import session, jsonify, current_app, flash
 from .sender import Sender
 from .receiver import Receiver
 import os
@@ -93,10 +93,15 @@ def generate_and_save_articles():
             sender.send(prompt=images_prompt)
             print('sent to mid api')
             receiver = Receiver(directory='app/static')
-            url, filename = receiver.collecting_result(image_prompt= images_prompt)
-            images_path_list = receiver.download_image(url, filename)
-            print('images downloaded')
-            print(images_path_list)
+            try:
+                url, filename = receiver.collecting_result(image_prompt= images_prompt)
+                images_path_list = receiver.download_image(url, filename)
+                print('images downloaded')
+                print(images_path_list)
 
-            create_post(title, description, images_path_list)
-            print('post created')
+                create_post(title, description, images_path_list)
+                print('post created')
+            except Exception as e:
+                flash(f"Error: {str(e)}")
+                # You might want to break the loop here, or continue with the next iteration.
+                # It depends on how you want your application to behave in case of error.
