@@ -1,13 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="container">
+    <div class="container post-container">
         <div class="post-detail">
-            <!-- Display the hero image -->
-            <img src="{{ post.images[0].image_url }}" alt="Hero image for {{ post.title }}">
-
             <!-- Display the post title -->
             <h1>{{ post.title }}</h1>
+            <!-- Display the hero image -->
+            {% if post.images %}
+            <img class= "img-fluid" src="{{ url_for('static', filename='output/' + post.images[0].image_url) }}" alt="Hero image for {{ post.title }}">
+            {% else %}
+            <!-- Display a default image if no images are present -->
+            <img src="{{ url_for('static', filename='default.png') }}" alt="Hero image for {{ post.title }}">
+            {% endif %} 
+
+
 
             <!-- Display the post date -->
             <p>{{ post.date.strftime('%B %d, %Y') }}</p>
@@ -18,9 +24,10 @@
             </div>
             
             <!-- Display the other images -->
-            {% for image in post.images[1:] %}
-                <img src="{{ image.image_url }}" alt="Image for {{ post.title }}">
-            {% endfor %}
+            {% if post.images|length > 1 %}
+            <img class= "img-fluid" src="{{ url_for('static', filename= 'output/' + post.images[1].image_url) }}" alt="Image for {{ post.title }}">
+            {% endif %}
+            
         </div>
     </div>
 {% endblock %}

@@ -1,10 +1,15 @@
 # Import necessary modules from flask
-from flask import render_template, request
-from flask import jsonify
+from flask import render_template, request, redirect, url_for, session, jsonify, flash
+from flask_login import login_user, logout_user, login_required
 from . import bp  # Import the blueprint we created in __init__.py
 from .models import Post, Image, User  # Import the Post model from the models module
+from .forms import RegistrationForm, LoginForm, ContentCreationForm
 from app import db
-from .auth import auth
+from .gpt4_service import generate_and_save_articles
+
+
+
+
 
 
 # Define the route for the homepage
@@ -69,7 +74,7 @@ def internal_error(error):
 #API Endpoints
 
 @bp.route('/api/posts', methods=['POST'])
-@auth.login_required
+@login_required
 
 def create_post():
     data = request.get_json() or {}
@@ -82,7 +87,7 @@ def create_post():
     return response
 
 @bp.route('/api/posts', methods=['GET'])
-@auth.login_required
+@login_required
 
 def get_posts():
     """Retrieve all blog posts."""
@@ -92,7 +97,7 @@ def get_posts():
 # API to get 1 post only or delete, I had to merge the 2 endpoints for a 405 error
 
 @bp.route('/api/posts/<int:post_id>', methods=['GET', 'DELETE'])
-@auth.login_required
+@login_required
 
 def handle_post(post_id):
     # Query the database for the post with the provided id
@@ -115,34 +120,64 @@ def handle_post(post_id):
 # registration and login endpoints
 
 
-@bp.route('/register', methods=['POST'])
+@bp.route('/register', methods=['GET', 'POST'])
 def register():
-    username = request.json.get('username')
-    password = request.json.get('password')
-    if username is None or password is None:
-        abort(400)    # missing arguments
-    if User.query.filter_by(username=username).first() is not None:
-        abort(400)    # existing user
-    user = User(username=username)
-    user.set_password(password)
-    db.session.add(user)
-    db.session.commit()
-    token = user.generate_auth_token(3600)
-    return jsonify({'token': token.decode('ascii'), 'duration': 3600}), 201
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        if User.query.filter_by(username=username).first() is not None:
+            # existing user, you can flash a message here to let the user know
+            # the username has been taken.
+            return render_template('register.html', form=form)
+        user = User(username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        # redirect user to login page after successful registration.
+        return redirect(url_for('main.login'))
+    return render_template('register.html', form=form)
 
-@bp.route('/login', methods=['POST'])
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
-    username = request.json.get('username')
-    password = request.json.get('password')
-    if username is None or password is None:
-        abort(400)    # missing arguments
-    user = User.query.filter_by(username=username).first()
-    if user is None or not user.check_password(password):
-        abort(400)    # invalid credentials
-    token = user.generate_auth_token(3600)
-    return jsonify({'token': token.decode('ascii'), 'duration': 3600}), 200
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        user = User.query.filter_by(username=username).first()
+        if user is None or not user.check_password(password):
+            # invalid credentials, you can flash a message here to let the user know
+            flash('Invalid username or password', 'error') # Add this line to flash a message
+            return render_template('login.html', form=form)
+        login_user(user)
+        return redirect(url_for('main.creator'))
+    return render_template('login.html', form=form)
 
+@bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('main.home')), 200
 
+# creator route
+
+@bp.route('/creator', methods=['GET', 'POST'])
+@login_required
+
+def creator():
+    form = ContentCreationForm()
+    if form.validate_on_submit():
+        num_articles = form.num_articles.data
+        topic = form.topic.data
+        session['creator_data'] = {'num_articles': num_articles, 'topic': topic}
+        # Avvia la generazione e il salvataggio degli articoli
+        try:
+            generate_and_save_articles()
+            flash('Your articles are generated.')
+        except Exception as e:
+            flash(f"Error: {str(e)}")
+        return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
+    return render_template('creator.html', content_form=form)
 
 
 

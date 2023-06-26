@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Welcome, {{ current_user.username }}!</h1>
+<p>You are now logged in and can start creating content.</p>
+
+<!-- Display flash messages -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<form method="POST">
+    {{ content_form.hidden_tag() }}
+    {{ content_form.num_articles.label }} {{ content_form.num_articles() }}
+    {{ content_form.topic.label }} {{ content_form.topic() }}
+    {{ content_form.submit() }}
+</form>
+
+<a href="{{ url_for('main.logout') }}">Logout</a>
+{% endblock %}

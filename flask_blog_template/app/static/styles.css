@@ -1,0 +1,49 @@
+li.error {
+    color: red;
+}
+
+:root {
+    --primary-color: #003C71;
+    --secondary-color: #FF6F00;
+    --background-color: #F9F9F9;
+    --text-color: #000000;
+  }
+  
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  .navbar, .footer {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  a {
+    color: var(--secondary-color);
+  }
+  
+  .card {
+    width: auto;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 6px 0px rgba(0,0,0,0.20);
+}
+
+.home-container {
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.form-login {
+  padding-top: 30px;
+  padding-bottom: 60px; 
+}
+
+.post-container {
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+
+
+
