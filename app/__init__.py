@@ -5,10 +5,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 
 
+
 db = SQLAlchemy()
 login_manager = LoginManager()  # Initialize login_manager here
 
 def create_app(config_class):
+
     app = Flask(__name__)
     if config_class == 'testing':
         app.config.from_object(TestConfig)

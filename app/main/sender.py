@@ -5,6 +5,7 @@ import re
 import argparse
 import sys
 import os
+from flask import current_app
 
 
 class Sender:
@@ -23,7 +24,7 @@ class Sender:
             params = json.load(json_file)
 
         self.channelid=params['channelid']
-        self.authorization=os.getenv('AUTHORIZATION')
+        self.authorization= current_app.config['AUTHORIZATION']
         self.application_id = params['application_id']
         self.guild_id = params['guild_id']
         self.session_id = params['session_id']

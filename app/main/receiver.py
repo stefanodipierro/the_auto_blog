@@ -5,6 +5,7 @@ from PIL import Image
 import os
 from datetime import datetime
 import re
+from flask import current_app
 
 
 
@@ -25,7 +26,7 @@ class Receiver:
             params = json.load(json_file)
 
         self.channelid=params['channelid']
-        self.authorization=params['authorization']
+        self.authorization= current_app.config['AUTHORIZATHION']
         self.headers = {'authorization' : self.authorization}
 
     def normalize_prompt(self, prompt):
