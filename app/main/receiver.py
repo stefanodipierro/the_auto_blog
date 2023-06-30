@@ -26,7 +26,7 @@ class Receiver:
             params = json.load(json_file)
 
         self.channelid=params['channelid']
-        self.authorization= current_app.config['AUTHORIZATHION']
+        self.authorization= current_app.config['AUTHORIZATION']
         self.headers = {'authorization' : self.authorization}
 
     def normalize_prompt(self, prompt):

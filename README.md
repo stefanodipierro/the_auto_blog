@@ -24,6 +24,7 @@ Copy code
 git clone 
 cd flask-blog-generator
 Install Python packages:
+create .env file with your tokens
 
 Copy code
 pip install -r requirements.txt
@@ -49,11 +50,14 @@ You need to use your own discord details for sender_params.json and your own ope
 
 
 TO FIX: 
-update requirements.txt
-fix error handling expecially in the while loop for collecting_result in receiver.py
-fix css for cards
-generally fixing css flaws.
-error handlings and messages for forms.
+update requirements.txt (FIXED)
+fix error handling expecially in the while loop for collecting_result in receiver.py (FIXED)
+fix css for cards (FIXED)
+generally fixing css flaws. (FIXED)
+error handlings and messages for forms. (FIXED)
+bug on 1 article that generates more articles (FIXED)
+move task create_save_articles in background(FIXED)
+add prompts to fill in meta tags and alt img
 
 
 Contributing

@@ -2,12 +2,15 @@ from flask import Flask
 from flask_login import LoginManager
 from config import Config, TestConfig
 from flask_sqlalchemy import SQLAlchemy
+from flask_executor import Executor  # Import Executor
 
 
 
 
 db = SQLAlchemy()
 login_manager = LoginManager()  # Initialize login_manager here
+executor = Executor()  # Initialize executor here
+
 
 def create_app(config_class):
 
@@ -19,6 +22,8 @@ def create_app(config_class):
     
     db.init_app(app)
     login_manager.init_app(app)  # Add this line to initialize login_manager with the app
+    executor.init_app(app)  # Add this line to initialize executor with the app
+
 
     with app.app_context():
         from .main import models, auth    # import here

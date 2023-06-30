@@ -8,6 +8,8 @@ from .receiver import Receiver
 import os
 
 
+
+
 def generate_titles(num_articles, topic):
     openai.api_key = current_app.config['OPENAI_API_KEY']
 
@@ -27,7 +29,8 @@ def generate_titles(num_articles, topic):
     # Remove bullet points
     titles = [title.split('. ', 1)[-1] for title in titles if title.strip() != '']
     titles = [title.strip('"') for title in titles]
-    print(titles)
+    if num_articles == 1:
+        titles = [titles[0]]
     return titles
 
 def create_post(title, description, image_path_list):
@@ -86,35 +89,34 @@ def generate_images(title):
 
 
 
-def generate_and_save_articles():
-    creator_data = session.get('creator_data')
-    if creator_data:
-        num_articles = creator_data['num_articles']
-        topic = creator_data['topic']
-        prompt = f"Create {num_articles} titles for articles of a blog on the topic {topic}"
-        # Qui invii il prompt a GPT-3.5 e ottieni una lista di titoli
-        titles = generate_titles(num_articles , topic)
+def generate_and_save_articles(num_articles, topic):
+    
+    
 
-        for title in titles:
-            string_description = generate_article(title)
-            description = wrap_paragraphs(string_description)
+    prompt = f"Create {num_articles} titles for articles of a blog on the topic {topic}"
+    # Qui invii il prompt a GPT-3.5 e ottieni una lista di titoli
+    titles = generate_titles(num_articles , topic)
 
-            images_prompt = generate_images(title)
-            print('image prompt generated')
-            sender = Sender()
-            sender.send(prompt=images_prompt)
-            print('sent to mid api')
-            receiver = Receiver(directory='app/static')
-            try:
-                url, filename = receiver.collecting_result(image_prompt= images_prompt)
-                images_path_list = receiver.download_image(url, filename)
-                print('images downloaded')
-                print(images_path_list)
+    for title in titles:
+        string_description = generate_article(title)
+        description = wrap_paragraphs(string_description)
 
-                create_post(title, description, images_path_list)
-                print('post created')
-            except Exception as e:
-                flash(f"Error: {str(e)}")
-                # You might want to break the loop here, or continue with the next iteration.
-                # It depends on how you want your application to behave in case of error.
-    return None
+        images_prompt = generate_images(title)
+        print('image prompt generated')
+        sender = Sender()
+        sender.send(prompt=images_prompt)
+        print('sent to mid api')
+        receiver = Receiver(directory='app/static')
+        try:
+            url, filename = receiver.collecting_result(image_prompt= images_prompt)
+            images_path_list = receiver.download_image(url, filename)
+            print('images downloaded')
+            print(images_path_list)
+
+            create_post(title, description, images_path_list)
+            print('post created')
+        except Exception as e:
+            flash(f"Error: {str(e)}")
+            # You might want to break the loop here, or continue with the next iteration.
+            # It depends on how you want your application to behave in case of error.
+    return "Articles generated!"

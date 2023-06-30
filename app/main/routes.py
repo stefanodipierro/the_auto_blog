@@ -6,6 +6,8 @@ from .models import Post, Image, User  # Import the Post model from the models m
 from .forms import RegistrationForm, LoginForm, ContentCreationForm
 from app import db
 from .gpt4_service import generate_and_save_articles
+from app import executor  # Import the executor directly
+
 
 
 
@@ -159,21 +161,20 @@ def logout():
     logout_user()
     return redirect(url_for('main.home')), 200
 
-# creator route
 
 @bp.route('/creator', methods=['GET', 'POST'])
 @login_required
-
 def creator():
     form = ContentCreationForm()
     if form.validate_on_submit():
         num_articles = form.num_articles.data
         topic = form.topic.data
-        session['creator_data'] = {'num_articles': num_articles, 'topic': topic}
+        
         # Avvia la generazione e il salvataggio degli articoli
         try:
-            generate_and_save_articles()
-            flash('Your articles are generated.')
+            # Submit the task to the executor
+            executor.submit(generate_and_save_articles, num_articles, topic)
+            flash('Your articles are being generated.')
         except Exception as e:
             flash(f"Error: {str(e)}")
         return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
