@@ -3,6 +3,8 @@ from flask_login import LoginManager
 from config import Config, TestConfig
 from flask_sqlalchemy import SQLAlchemy
 from flask_executor import Executor  # Import Executor
+from flask_migrate import Migrate
+import os
 
 
 
@@ -12,10 +14,14 @@ login_manager = LoginManager()  # Initialize login_manager here
 executor = Executor()  # Initialize executor here
 
 
-def create_app(config_class):
 
+
+def create_app():
+
+    
     app = Flask(__name__)
-    if config_class == 'testing':
+    config_name = os.getenv('FLASK_CONFIG', 'Config')  # use 'Config' as the default config name
+    if config_name == 'TestConfig':
         app.config.from_object(TestConfig)
     else:
         app.config.from_object(Config)
@@ -23,6 +29,8 @@ def create_app(config_class):
     db.init_app(app)
     login_manager.init_app(app)  # Add this line to initialize login_manager with the app
     executor.init_app(app)  # Add this line to initialize executor with the app
+    migrate = Migrate(app, db)
+
 
 
     with app.app_context():

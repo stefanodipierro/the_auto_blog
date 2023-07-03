@@ -57,7 +57,8 @@ generally fixing css flaws. (FIXED)
 error handlings and messages for forms. (FIXED)
 bug on 1 article that generates more articles (FIXED)
 move task create_save_articles in background(FIXED)
-add prompts to fill in meta tags and alt img
+add prompts to fill in meta tags and alt img(Fixed)
+images converted in webp instead of png(fixed)
 
 
 Contributing

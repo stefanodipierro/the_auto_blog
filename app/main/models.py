@@ -14,11 +14,12 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    images_prompt = db.Column(db.String(500))  # Aggiunto qui
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     images = db.relationship('Image', backref='post', lazy=True)
 
     def from_dict(self, data):
-        for field in ['title', 'description', 'date']:
+        for field in ['title', 'description', 'date', 'images_prompt']:
             if field in data:
                 setattr(self, field, data[field])
         if 'images' in data:
@@ -30,6 +31,7 @@ class Post(db.Model):
             'id': self.id,
             'title': self.title,
             'description': self.description,
+            'images_prompt': self.images_prompt,
             'date': self.date,
             'images': [image.image_url for image in self.images]
         }

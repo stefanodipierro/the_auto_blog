@@ -4,6 +4,10 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% block meta %}
+    <!-- Default meta description -->
+    <meta name="description" content="Descrizione predefinita del sito">
+    {% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
     <!-- Bootstrap CSS -->

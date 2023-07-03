@@ -113,20 +113,20 @@ class Receiver:
                 # Split the image
                 top_left, top_right, bottom_left, bottom_right = self.split_image(input_file)
                 # Save the output images with dynamic names in the output folder
-                top_left_filename = file_prefix + "_top_left.jpg"
-                top_right_filename = file_prefix + "_top_right.jpg"
-                bottom_left_filename = file_prefix + "_bottom_left.jpg"
-                bottom_right_filename = file_prefix + "_bottom_right.jpg"
+                top_left_filename = file_prefix + "_top_left.webp"
+                top_right_filename = file_prefix + "_top_right.webp"
+                bottom_left_filename = file_prefix + "_bottom_left.webp"
+                bottom_right_filename = file_prefix + "_bottom_right.webp"
 
                 top_left_path = os.path.join(self.directory, output_folder, top_left_filename)
                 top_right_path = os.path.join(self.directory, output_folder, top_right_filename)
                 bottom_left_path = os.path.join(self.directory, output_folder, bottom_left_filename)
                 bottom_right_path = os.path.join(self.directory, output_folder, bottom_right_filename)
 
-                top_left.save(top_left_path)
-                top_right.save(top_right_path)
-                bottom_left.save(bottom_left_path)
-                bottom_right.save(bottom_right_path)
+                top_left.save(top_left_path, "WEBP")
+                top_right.save(top_right_path, "WEBP")
+                bottom_left.save(bottom_left_path, "WEBP")
+                bottom_right.save(bottom_right_path, "WEBP")
 
                 file_paths.extend([top_left_filename, top_right_filename, bottom_left_filename, bottom_right_filename])
 
