@@ -14,6 +14,10 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     AUTHORIZATION = os.getenv('AUTHORIZATION')
+    FACEBOOK_APP_ID = os.getenv('FACEBOOK_APP_ID')
+    FACEBOOK_APP_SECRET = os.getenv('FACEBOOK_APP_SECRET')
+    YOUR_REDIRECT_URI = os.getenv('YOUR_REDIRECT_URI')
+    FB_PAGE_ID = os.getenv('FB_PAGE_ID')
 
 
 class TestConfig(Config):

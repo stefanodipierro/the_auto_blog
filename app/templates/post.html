@@ -4,6 +4,12 @@
 {% set description_paragraphs = post.description.split('</p>') %}
 {% set meta_description = description_paragraphs[2]|striptags if description_paragraphs[2]|striptags|length > 50 else description_paragraphs[1]|striptags %}
 <meta name="description" content="{{ meta_description }}">
+<meta property="og:title" content="{{ post.title }}" />
+<meta property="og:description" content="{{ meta_description }}" />
+<meta property="og:image" content="{{ url_for('static', filename='output/' + post.images[0].image_url, _external=True) }}" />
+<meta property="og:url" content="{{ url_for('main.post', post_id=post.id, _external=True) }}" />
+<meta property="og:type" content="article" />
+
 {% endblock %}
 
 {% block content %}

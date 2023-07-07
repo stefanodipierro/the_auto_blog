@@ -2,10 +2,12 @@
 import openai
 from app import db
 from app.main.models import Post
-from flask import session, jsonify, current_app, flash
+from flask import session, jsonify, current_app, flash, url_for
 from .sender import Sender
 from .receiver import Receiver
 import os
+from flask_login import current_user
+import app.main.fb_script
 
 
 
@@ -38,9 +40,12 @@ def create_post(title, description, image_path_list, images_prompt):
     post.from_dict({'title': title, 'description': description, 'images': image_path_list, 'images_prompt': images_prompt})
     db.session.add(post)
     db.session.commit()
+
+    # Costruisci l'URL del post. Assumiamo che l'URL del post sia qualcosa del tipo "www.yourwebsite.com/post/<post_id>"
+    post_url = url_for('post.show', post_id=post.id, _external=True)
     response = jsonify({"message": "Post created successfully", "id": post.id})
     response.status_code = 201
-    return response
+    return response, post_url
 
 def generate_article(title):
     openai.api_key = current_app.config['OPENAI_API_KEY']
@@ -91,7 +96,7 @@ def generate_images(title):
 
 
 
-def generate_and_save_articles(num_articles, topic):
+def generate_and_save_articles(num_articles, topic,post_to_facebook, post_to_reddit):
     
     
 
@@ -115,8 +120,13 @@ def generate_and_save_articles(num_articles, topic):
             print('images downloaded')
             print(images_path_list)
 
-            create_post(title, description, images_path_list, images_prompt)
+            response, post_url = create_post(title, description, images_path_list, images_prompt)
             print('post created')
+            # Ora, se l'utente ha deciso di postare su Facebook, puoi chiamare la funzione 'post_to_facebook_page'
+            if post_to_facebook:
+                user_facebook_access_token = current_user.facebook_access_token  # Recupera il token dell'utente dal database
+                if user_facebook_access_token:
+                    app.main.fb_script.post_to_facebook_page(current_app.config['FB_PAGE_ID'], post_url, user_facebook_access_token)
         except Exception as e:
             flash(f"Error: {str(e)}")
             # You might want to break the loop here, or continue with the next iteration.

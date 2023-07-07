@@ -15,10 +15,22 @@
   {% endif %}
 {% endwith %}
 
+<!-- Social Media Form -->
+<h2>Social Media Settings</h2>
+<form method="POST">
+    {{ social_form.hidden_tag() }}
+    {{ social_form.facebook() }} Connect to Facebook<br/>
+    {{ social_form.reddit() }} Connect to Reddit<br/>
+</form>
+
+<!-- Content Creation Form -->
+<h2>Create Content</h2>
 <form method="POST">
     {{ content_form.hidden_tag() }}
-    {{ content_form.num_articles.label }} {{ content_form.num_articles() }}
-    {{ content_form.topic.label }} {{ content_form.topic() }}
+    {{ content_form.num_articles.label }} {{ content_form.num_articles() }}<br/>
+    {{ content_form.topic.label }} {{ content_form.topic() }}<br/>
+    {{ content_form.post_to_facebook.label }} {{ content_form.post_to_facebook() }}<br/>
+    {{ content_form.post_to_reddit.label }} {{ content_form.post_to_reddit() }}<br/>
     {{ content_form.submit() }}
 </form>
 

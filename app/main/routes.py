@@ -1,12 +1,20 @@
 # Import necessary modules from flask
-from flask import render_template, request, redirect, url_for, session, jsonify, flash
-from flask_login import login_user, logout_user, login_required
+from flask import render_template, request, redirect, url_for, session, jsonify, flash, current_app
+from flask_login import login_user, logout_user, login_required, current_user
 from . import bp  # Import the blueprint we created in __init__.py
 from .models import Post, Image, User  # Import the Post model from the models module
-from .forms import RegistrationForm, LoginForm, ContentCreationForm
+from .forms import RegistrationForm, LoginForm, ContentCreationForm, SocialMediaForm
 from app import db
 from .gpt4_service import generate_and_save_articles
+import app.main.fb_script
 from app import executor  # Import the executor directly
+from flask import redirect
+from facebook import GraphAPIError  # Questo è l'equivalente più vicino di FacebookResponseException nella libreria `facebook-sdk`
+
+from facebook import GraphAPI  # Questo è l'equivalente più vicino di `facebook` nella libreria `facebook-sdk`
+from requests import get
+import urllib
+
 
 
 
@@ -165,20 +173,85 @@ def logout():
 @bp.route('/creator', methods=['GET', 'POST'])
 @login_required
 def creator():
+     
+    social_form = SocialMediaForm()
+   
     form = ContentCreationForm()
+    # validation social form
+    if social_form.validate_on_submit():
+        if social_form.facebook.data:
+            return redirect(url_for('main.connect_facebook'))
+        elif social_form.reddit.data:
+            # Reindirizza l'utente alla pagina di autorizzazione di Reddit
+            pass  # Da implementare
+        return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
+   
+    #validation content generator form
+
     if form.validate_on_submit():
         num_articles = form.num_articles.data
         topic = form.topic.data
+        post_to_facebook = form.post_to_facebook.data
+        post_to_reddit = form.post_to_reddit.data
         
         # Avvia la generazione e il salvataggio degli articoli
         try:
             # Submit the task to the executor
-            executor.submit(generate_and_save_articles, num_articles, topic)
+            executor.submit(generate_and_save_articles, num_articles, topic, post_to_facebook, post_to_reddit)
             flash('Your articles are being generated.')
         except Exception as e:
             flash(f"Error: {str(e)}")
         return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
-    return render_template('creator.html', content_form=form)
+    return render_template('creator.html', content_form=form, social_form=social_form)
+
+
+# facebook 
+
+@bp.route("/connect_facebook")
+@login_required
+def connect_facebook():
+    # Creazione dell'URL di autorizzazione
+    params = {
+        "client_id": current_app.config['FACEBOOK_APP_ID'],
+        "redirect_uri": url_for('main.facebook_callback', _external=True),  # Si assicura che l'URL sia assoluto
+        "scope": "pages_read_engagement,pages_manage_posts",  # Impostare le autorizzazioni desiderate qui
+        "state": "random_string"  # Si dovrebbe generare e salvare una stringa casuale per verificare la risposta
+    }
+
+    url = "https://www.facebook.com/dialog/oauth?" + urllib.parse.urlencode(params)
+    return redirect(url)
+
+
+@bp.route("/facebook_callback")
+@login_required
+def facebook_callback():
+    code = request.args.get('code')
+    state = request.args.get('state')
+
+    # Si dovrebbe verificare la stringa di stato qui
+
+    # Richiedere il token di accesso
+    params = {
+        "client_id": current_app.config['FACEBOOK_APP_ID'],
+        "redirect_uri": url_for('main.facebook_callback', _external=True),  # Deve essere lo stesso di sopra
+        "client_secret": current_app.config['FACEBOOK_APP_SECRET'],
+        "code": code
+    }
+
+    url = "https://graph.facebook.com/v13.0/oauth/access_token?" + urllib.parse.urlencode(params)
+
+    # Ottenere il token di accesso
+    response = get(url)
+    data = response.json()
+
+    if 'access_token' in data:
+        access_token = data['access_token']
+        # Utilizzare access_token con GraphAPI e salvare nel database ecc.
+    elif 'error' in data:
+        # Gestire l'errore
+        pass
+
+
 
 
 
