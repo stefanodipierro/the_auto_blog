@@ -29,7 +29,7 @@ import app.main.fb_script
 def home():
     """Renders the home page with all blog posts."""
     # Query all posts from the database
-    posts = Post.query.all()
+    posts = Post.query.order_by(Post.date.desc()).all()
 
     # Pass the posts to the template
     return render_template('home.html', posts=posts)
@@ -38,7 +38,7 @@ def home():
 @bp.route('/post/<int:post_id>')
 def post(post_id):
     post = Post.query.get_or_404(post_id)  # This line fetches the post by id, or returns a 404 error if it doesn't exist.
-    return render_template('post.html', post=post)
+    return render_template('post.html', post=post, title=post.title)
 
 
 @bp.route('/search', methods=['GET', 'POST'])
@@ -68,6 +68,7 @@ def load_more(page):
         for post in posts
     ]
     return jsonify(posts_json)
+
 
 
 # Errors routes
@@ -100,11 +101,11 @@ def create_post():
 
 @bp.route('/api/posts', methods=['GET'])
 @login_required
-
 def get_posts():
     """Retrieve all blog posts."""
-    posts = Post.query.all()  # Query the database for all posts
+    posts = Post.query.order_by(Post.date.desc()).all()  # Query the database for all posts in descending order of date
     return jsonify([post.to_dict() for post in posts])  # Return the posts as a JSON array
+
 
 # API to get 1 post only or delete, I had to merge the 2 endpoints for a 405 error
 
