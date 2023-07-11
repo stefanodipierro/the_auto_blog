@@ -10,6 +10,30 @@
 <meta property="og:url" content="{{ url_for('main.post', post_id=post.id, _external=True) }}" />
 <meta property="og:type" content="article" />
 
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "{{ url_for('main.post', post_id=post.id, _external=True) }}"
+        },
+        "headline": "{{ post.title }}",
+        "image": "{{ url_for('static', filename='output/' + post.images[0].image_url, _external=True) if post.images else '' }}",
+        "author": "Nome dell'Autore",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Street Bites World",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ url_for('static', filename='logo.png', _external=True) }}"
+            }
+        },
+        "datePublished": "{{ post.date.isoformat() }}",
+        "dateModified": "{{ post.date.isoformat() }}"
+    }
+    </script>
+
 {% endblock %}
 
 {% block content %}

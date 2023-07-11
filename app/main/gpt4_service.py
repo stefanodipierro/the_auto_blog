@@ -91,7 +91,6 @@ def generate_images(title):
     image_descriptions = [choice['message']['content'] for choice in response['choices']]
     
     # Return only the first description
-    print('Image description' + image_descriptions[0])
     return image_descriptions[0] if image_descriptions else None
 
 
@@ -103,25 +102,20 @@ def generate_and_save_articles(num_articles, topic, post_to_fb):
     prompt = f"Create {num_articles} titles for articles of a blog on the topic {topic}"
     # Qui invii il prompt a GPT-3.5 e ottieni una lista di titoli
     titles = generate_titles(num_articles , topic)
-    print(titles)
 
     for title in titles:
         string_description = generate_article(title)
         description = wrap_paragraphs(string_description)
 
         images_prompt = generate_images(title)
-        print('image prompt generated' + images_prompt )
         sender = Sender()
         sender.send(prompt=images_prompt)
-        print('sent to mid api')
         receiver = Receiver(directory='app/static')
         try:
             url, filename = receiver.collecting_result(image_prompt= images_prompt)
             images_path_list = receiver.download_image(url, filename)
-            print('images downloaded')
             print(images_path_list)
 
-            print("Before calling create_post")
             try:
                 response, post_url = create_post(title, description, images_path_list, images_prompt)
             except Exception as e:
