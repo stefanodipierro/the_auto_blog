@@ -18,6 +18,8 @@ class Config:
     FACEBOOK_APP_SECRET = os.getenv('FACEBOOK_APP_SECRET')
     YOUR_REDIRECT_URI = os.getenv('YOUR_REDIRECT_URI')
     FB_PAGE_ID = os.getenv('FB_PAGE_ID')
+	# Imposta l'URL preferito su HTTPS
+    PREFERRED_URL_SCHEME = 'https'
 
 
 class TestConfig(Config):

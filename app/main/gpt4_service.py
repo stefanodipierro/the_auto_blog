@@ -41,11 +41,12 @@ def create_post(title, description, image_path_list, images_prompt):
     db.session.add(post)
     db.session.commit()
 
-    # Costruisci l'URL del post. Assumiamo che l'URL del post sia qualcosa del tipo "www.yourwebsite.com/post/<post_id>"
-    post_url = url_for('post.show', post_id=post.id, _external=True)
+    # Costruisci l'URL del post.
+    post_url = url_for('main.post', post_id=post.id, _external=True)
     response = jsonify({"message": "Post created successfully", "id": post.id})
     response.status_code = 201
     return response, post_url
+
 
 def generate_article(title):
     openai.api_key = current_app.config['OPENAI_API_KEY']
@@ -96,13 +97,13 @@ def generate_images(title):
 
 
 
-def generate_and_save_articles(num_articles, topic,post_to_facebook, post_to_reddit):
+def generate_and_save_articles(num_articles, topic, post_to_fb):
     
-    
-
+    print(post_to_fb)
     prompt = f"Create {num_articles} titles for articles of a blog on the topic {topic}"
     # Qui invii il prompt a GPT-3.5 e ottieni una lista di titoli
     titles = generate_titles(num_articles , topic)
+    print(titles)
 
     for title in titles:
         string_description = generate_article(title)
@@ -120,15 +121,22 @@ def generate_and_save_articles(num_articles, topic,post_to_facebook, post_to_red
             print('images downloaded')
             print(images_path_list)
 
-            response, post_url = create_post(title, description, images_path_list, images_prompt)
-            print('post created')
+            print("Before calling create_post")
+            try:
+                response, post_url = create_post(title, description, images_path_list, images_prompt)
+            except Exception as e:
+                print(f"Error when calling create_post: {e}")
+            else:
+                print("After calling create_post")
+
             # Ora, se l'utente ha deciso di postare su Facebook, puoi chiamare la funzione 'post_to_facebook_page'
-            if post_to_facebook:
+            if post_to_fb:
                 user_facebook_access_token = current_user.facebook_access_token  # Recupera il token dell'utente dal database
+                print(f'User Facebook Access Token: {user_facebook_access_token}')  # Stampa il token
                 if user_facebook_access_token:
                     app.main.fb_script.post_to_facebook_page(current_app.config['FB_PAGE_ID'], post_url, user_facebook_access_token)
         except Exception as e:
-            flash(f"Error: {str(e)}")
+            print(f"Error when posting to Facebook: {str(e)}")
             # You might want to break the loop here, or continue with the next iteration.
             # It depends on how you want your application to behave in case of error.
-    return "Articles generated!"
+            raise

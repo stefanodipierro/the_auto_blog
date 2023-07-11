@@ -14,6 +14,8 @@ from facebook import GraphAPIError  # Questo è l'equivalente più vicino di Fac
 from facebook import GraphAPI  # Questo è l'equivalente più vicino di `facebook` nella libreria `facebook-sdk`
 from requests import get
 import urllib
+import app.main.fb_script
+
 
 
 
@@ -184,7 +186,7 @@ def creator():
         elif social_form.reddit.data:
             # Reindirizza l'utente alla pagina di autorizzazione di Reddit
             pass  # Da implementare
-        return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
+      #  return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
    
     #validation content generator form
 
@@ -197,7 +199,7 @@ def creator():
         # Avvia la generazione e il salvataggio degli articoli
         try:
             # Submit the task to the executor
-            executor.submit(generate_and_save_articles, num_articles, topic, post_to_facebook, post_to_reddit)
+            executor.submit(generate_and_save_articles, num_articles, topic, post_to_facebook)
             flash('Your articles are being generated.')
         except Exception as e:
             flash(f"Error: {str(e)}")
@@ -213,12 +215,17 @@ def connect_facebook():
     # Creazione dell'URL di autorizzazione
     params = {
         "client_id": current_app.config['FACEBOOK_APP_ID'],
-        "redirect_uri": url_for('main.facebook_callback', _external=True),  # Si assicura che l'URL sia assoluto
+        "redirect_uri": "https://financeilluminate.online" + url_for('main.facebook_callback'),  # Si assicura che l'URL sia assoluto
         "scope": "pages_read_engagement,pages_manage_posts",  # Impostare le autorizzazioni desiderate qui
         "state": "random_string"  # Si dovrebbe generare e salvare una stringa casuale per verificare la risposta
     }
 
     url = "https://www.facebook.com/dialog/oauth?" + urllib.parse.urlencode(params)
+	
+	
+    # Stampa l'URL del reindirizzamento per controllare che sia HTTPS
+    print("Redirect URL:", url)
+	
     return redirect(url)
 
 
@@ -233,7 +240,7 @@ def facebook_callback():
     # Richiedere il token di accesso
     params = {
         "client_id": current_app.config['FACEBOOK_APP_ID'],
-        "redirect_uri": url_for('main.facebook_callback', _external=True),  # Deve essere lo stesso di sopra
+        "redirect_uri": "https://financeilluminate.online" + url_for('main.facebook_callback'),  # Si assicura che l'URL sia assoluto
         "client_secret": current_app.config['FACEBOOK_APP_SECRET'],
         "code": code
     }
@@ -247,9 +254,16 @@ def facebook_callback():
     if 'access_token' in data:
         access_token = data['access_token']
         # Utilizzare access_token con GraphAPI e salvare nel database ecc.
+        long_lived_token = app.main.fb_script.get_long_lived_token(current_app.config['FACEBOOK_APP_ID'], current_app.config['FACEBOOK_APP_SECRET'], access_token)
+		# Set the access token on the current user (assuming the user is logged in)
+        current_user.facebook_access_token = long_lived_token
+        db.session.commit()
+
+        return redirect(url_for('main.creator'))  # Reindirizza l'utente alla stessa pagina del creatore
     elif 'error' in data:
-        # Gestire l'errore
-        pass
+        # Gestisci l'errore
+        return "Si è verificato un errore durante l'accesso"  # Aggiungi qui la tua logica per gestire l'errore
+
 
 
 
