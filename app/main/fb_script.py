@@ -37,3 +37,16 @@ def post_to_facebook_page(page_id, message, access_token):
         print("Successfully posted to Facebook page.")
     else:
         print(f"Failed to post to Facebook page. Status code: {response.status_code}, message: {response.text}")
+
+def get_page_access_token(user_access_token, page_id):
+    url = f"https://graph.facebook.com/{page_id}"
+    params = {
+        "fields": "access_token",
+        "access_token": user_access_token
+    }
+
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    return data.get("access_token")  # Restituisce il token di accesso alla pagina
+
