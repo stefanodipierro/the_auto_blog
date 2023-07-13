@@ -61,7 +61,15 @@
             {% if post.images|length > 1 %}
             <img class= "img-fluid" src="{{ url_for('static', filename= 'output/' + post.images[1].image_url) }}" alt="{{ post.images_prompt }}">
             {% endif %}
-            
+            {% if random_posts %}
+                <h2 class="h2-list-link">Other posts you may find interesting:</h2>
+                <ul>
+                {% for random_post in random_posts %}
+                    <li><a href="{{ url_for('main.post', slug=random_post.slug) }}">{{ random_post.title }}</a></li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+
         </div>
     </div>
 {% endblock %}
