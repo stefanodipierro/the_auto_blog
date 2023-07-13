@@ -67,7 +67,7 @@ def generate_article(title):
     messages=[
         {
         "role": "system",
-        "content": "You are an AI expert in generating a  blog article from a title that will be given at a later stage. The article is long and extensively covers many aspects. The article generated from the prompt will be optimized for having a tone informal, smart, and enterteing it will be generated in html format (only include what would be in the <body> )\n"
+        "content": "You are an AI expert in generating a  blog article from a title that will be given at a later stage. The article is long and extensively covers many aspects. The article generated from the prompt will be optimized for having a tone informal, smart, and enterteing it will be generated in html format (only include what would be in the <body> ). The article will be optimized for SEO and will be written in a way that is easy to read and understand."
         },
         {
         "role": "user",

@@ -15,6 +15,8 @@ from facebook import GraphAPI  # Questo è l'equivalente più vicino di `faceboo
 from requests import get
 import urllib
 import app.main.fb_script
+from sqlalchemy.sql.expression import func
+
 
 
 
@@ -35,10 +37,13 @@ def home():
     return render_template('home.html', posts=posts)
 
 # Define the route for the post detail page
+
 @bp.route('/post/<slug>')
 def post(slug):
     post = Post.query.filter_by(slug=slug).first_or_404()  # This line fetches the post by slug, or returns a 404 error if it doesn't exist.
-    return render_template('post.html', post=post, title=post.title)
+    random_posts = Post.query.order_by(func.random()).limit(5).all()  # This line fetches 5 random posts from the database.
+    return render_template('post.html', post=post, title=post.title, random_posts=random_posts)  # Pass the random_posts to the template
+
 
 
 
