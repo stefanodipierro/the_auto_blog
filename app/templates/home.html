@@ -6,7 +6,7 @@
       {% for post in posts %}
         <div class="col-lg-4 col-md-6 col-sm-12">
           <!-- Wrap the entire card content with an anchor tag -->
-          <a href="{{ url_for('main.post', post_id=post.id) }}" style="text-decoration: none; color: inherit;">
+          <a href="{{ url_for('main.post', slug=post.slug) }}" style="text-decoration: none; color: inherit;">
             <div class="card">
               <!-- Display the hero image -->
               {% if post.images %}

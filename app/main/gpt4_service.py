@@ -15,15 +15,25 @@ import app.main.fb_script
 def generate_titles(num_articles, topic):
     openai.api_key = current_app.config['OPENAI_API_KEY']
 
-    prompt = f"Generate {num_articles} number of titles for blog posts about {topic}"
+    prompt = f"Write {num_articles} titles about {topic}"
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",  # Use the GPT-3.5 model
-        messages=[
-            {"role": "system", "content": "You are an advanced AI assistant specialized in generating creative and unique blog post titles. Consider the topic at hand and think about engaging, relevant titles that would attract readers. Try to vary the structure and style of each title for diversity."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=1000
+    model="gpt-3.5-turbo-16k",
+    messages=[
+        {
+        "role": "system",
+        "content": "You are an AI specialized in writing titles for blog articles. As an AI specialized in SEO, you include relevant keywords to search engines to achieve a perfect indexing and ranking."
+        },
+        {
+        "role": "user",
+        "content": prompt
+        }
+    ],
+    temperature=1,
+    max_tokens=256,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0.09
     )
 
     # The generated titles are in the 'choices' list in the response. We split them by newline character.
@@ -42,7 +52,7 @@ def create_post(title, description, image_path_list, images_prompt):
     db.session.commit()
 
     # Costruisci l'URL del post.
-    post_url = url_for('main.post', post_id=post.id, _external=True)
+    post_url = url_for('main.post', slug=post.slug, _external=True)
     response = jsonify({"message": "Post created successfully", "id": post.id})
     response.status_code = 201
     return response, post_url
@@ -51,14 +61,24 @@ def create_post(title, description, image_path_list, images_prompt):
 def generate_article(title):
     openai.api_key = current_app.config['OPENAI_API_KEY']
 
-    prompt = f"Write an article about {title}. The article should be at least 2000 words long."
+    prompt = f"Write an article about {title}."
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-16k",  # Use the GPT-3.5 model
-        messages=[
-            {"role": "system", "content": "You are an intelligent AI assistant with expertise in generating informative, engaging, and well-structured blog articles. Each article should provide value to the reader, be coherent and well-organized, and use a style and tone appropriate for a blog audience. Remember to include a strong introduction and conclusion."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=10000
+    model="gpt-3.5-turbo-16k",
+    messages=[
+        {
+        "role": "system",
+        "content": "You are an AI expert in generating a  blog article from a title that will be given at a later stage. The article is long and extensively covers many aspects. The article generated from the prompt will be optimized for having a tone informal, smart, and enterteing it will be generated in html format (only include what would be in the <body> )\n"
+        },
+        {
+        "role": "user",
+        "content": prompt
+        }
+    ],
+    temperature=1,
+    max_tokens=2048,
+    top_p=1,
+    frequency_penalty=0.04,
+    presence_penalty=0.1
     )
 
     # The generated article is in the 'choices' list in the response
@@ -102,20 +122,30 @@ def generate_and_save_articles(num_articles, topic, post_to_fb):
     prompt = f"Create {num_articles} titles for articles of a blog on the topic {topic}"
     # Qui invii il prompt a GPT-3.5 e ottieni una lista di titoli
     titles = generate_titles(num_articles , topic)
+    print(titles)
 
     for title in titles:
+        print(f"Generating article for title: {title}")
         string_description = generate_article(title)
         description = wrap_paragraphs(string_description)
 
         images_prompt = generate_images(title)
+        print(f"Generated images_prompt: {images_prompt}")
         sender = Sender()
         sender.send(prompt=images_prompt)
+
         receiver = Receiver(directory='app/static')
         try:
+            print("Before calling receiver.collecting_result")
             url, filename = receiver.collecting_result(image_prompt= images_prompt)
-            images_path_list = receiver.download_image(url, filename)
-            print(images_path_list)
+            print("After calling receiver.collecting_result")
 
+            print("Before calling receiver.download_image")
+            images_path_list = receiver.download_image(url, filename)
+            print("After calling receiver.download_image")
+            print(f"Images downloaded: {images_path_list}")
+
+            print("Before calling create_post")
             try:
                 response, post_url = create_post(title, description, images_path_list, images_prompt)
             except Exception as e:
@@ -123,14 +153,11 @@ def generate_and_save_articles(num_articles, topic, post_to_fb):
             else:
                 print("After calling create_post")
 
-            # Ora, se l'utente ha deciso di postare su Facebook, puoi chiamare la funzione 'post_to_facebook_page'
             if post_to_fb:
-                user_facebook_access_token = current_user.facebook_access_token  # Recupera il token dell'utente dal database
-                print(f'User Facebook Access Token: {user_facebook_access_token}')  # Stampa il token
+                user_facebook_access_token = current_user.facebook_access_token
+                print(f'User Facebook Access Token: {user_facebook_access_token}')
                 if user_facebook_access_token:
                     app.main.fb_script.post_to_facebook_page(current_app.config['FB_PAGE_ID'], post_url, user_facebook_access_token)
         except Exception as e:
             print(f"Error when posting to Facebook: {str(e)}")
-            # You might want to break the loop here, or continue with the next iteration.
-            # It depends on how you want your application to behave in case of error.
-            raise
+

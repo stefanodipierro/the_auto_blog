@@ -35,10 +35,11 @@ def home():
     return render_template('home.html', posts=posts)
 
 # Define the route for the post detail page
-@bp.route('/post/<int:post_id>')
-def post(post_id):
-    post = Post.query.get_or_404(post_id)  # This line fetches the post by id, or returns a 404 error if it doesn't exist.
+@bp.route('/post/<slug>')
+def post(slug):
+    post = Post.query.filter_by(slug=slug).first_or_404()  # This line fetches the post by slug, or returns a 404 error if it doesn't exist.
     return render_template('post.html', post=post, title=post.title)
+
 
 
 @bp.route('/search', methods=['GET', 'POST'])
