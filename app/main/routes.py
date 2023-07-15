@@ -262,7 +262,7 @@ def facebook_callback():
         access_token = data['access_token']
         # Utilizzare access_token con GraphAPI e salvare nel database ecc.
         long_lived_token = app.main.fb_script.get_long_lived_token(current_app.config['FACEBOOK_APP_ID'], current_app.config['FACEBOOK_APP_SECRET'], access_token)
-        page_access_token = app.main.fb_script.get_page_access_token(long_lived_token, current_app.config['FACEBOOK_PAGE_ID'])
+        page_access_token = app.main.fb_script.get_page_access_token(long_lived_token, current_app.config['FB_PAGE_ID'])
 		# Set the access token on the current user (assuming the user is logged in)
         current_user.facebook_access_token = page_access_token
         db.session.commit()

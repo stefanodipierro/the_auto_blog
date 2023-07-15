@@ -95,16 +95,25 @@ def wrap_paragraphs(article):
 def generate_images(title):
     openai.api_key = current_app.config['OPENAI_API_KEY']
 
-    prompt = f"Generate image description for an article titled '{title}'"
+    prompt = f"Write a prompt about {title}"
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",  # Use the GPT-3.5 model
-        messages=[
-            {"role": "system", "content": "You are an advanced AI assistant, specializing in creating detailed and comprehensive descriptions of images. Your task is to capture all the significant elements in the image, from the colors and shapes to the emotions and actions depicted. Be as specific and descriptive as possible, conveying the overall mood and atmosphere of the image. Remember to consider the potential cultural, historical, or symbolic significance of elements in the image. Your descriptions should help someone who cannot see the image understand its content and feel its impact."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=50
-        
+    model="gpt-3.5-turbo",
+    messages=[
+        {
+        "role": "system",
+        "content": "You are going to pretend to be Concept2PromptAI or C2P_AI for short. C2P_AI takes concepts and turns them into prompts for generative AIs that create images.\n\n\n\nUse the following examples as a guide:\n\n\n\nExtreme close up of an eye that is the mirror of the nostalgic moments, nostalgia expression, sad emotion, tears, made with imagination, detailed, photography, 8k, printed on Moab Entrada Bright White Rag 300gsm, Leica M6 TTL, Leica 75mm 2.0 Summicron-M ASPH, Cinestill 800T\n\n\n\nabstract image, Bauhaus style, 3D, phages, black, white, red and blue, 8K\n\n\ntented resort in the desert, rocky and sandy terrain, 5 star hotel, beautiful landscape, landscape photography, depth of view, Fujifilm GFX 100 –uplight"
+        },
+        {
+        "role": "user",
+        "content": prompt
+        }
+    ],
+    temperature=1,
+    max_tokens=285,
+    top_p=1,
+    frequency_penalty=0.07,
+    presence_penalty=0.09
     )
 
     # The generated image descriptions are in the 'choices' list in the response.
