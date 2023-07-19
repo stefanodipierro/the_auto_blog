@@ -16,6 +16,7 @@ from requests import get
 import urllib
 import app.main.fb_script
 from sqlalchemy.sql.expression import func
+from datetime import datetime
 
 
 
@@ -271,7 +272,30 @@ def facebook_callback():
     elif 'error' in data:
         # Gestisci l'errore
         return "Si è verificato un errore durante l'accesso"  # Aggiungi qui la tua logica per gestire l'errore
+    
 
+@bp.route('/sitemap.xml', methods=['GET'])
+def sitemap():
+    try:
+        # Estrai gli slug dai post nel database
+        posts = Post.query.all()
+
+        # Prepara la lista degli URL da includere nella sitemap
+        urls = []
+
+        for post in posts:
+            url = {
+                'loc': f"https://streetbitesworld.com/{post.slug}",
+                'lastmod': post.date.strftime('%Y-%m-%dT%H:%M:%S+00:00'),
+                'priority': '0.80'
+            }
+            urls.append(url)
+
+        return render_template('sitemap.xml', urls=urls)
+
+    except Exception as e:
+        print(e)
+        return "Errore nella generazione della sitemap", 500
 
 
 
