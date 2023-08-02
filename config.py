@@ -21,6 +21,10 @@ class Config:
 	# Imposta l'URL preferito su HTTPS
     PREFERRED_URL_SCHEME = 'https'
 
+    # regis
+    CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+    CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
+
 
 class TestConfig(Config):
     # Your testing database URI

@@ -9,6 +9,9 @@ import os
 from flask_login import current_user
 import app.main.fb_script
 
+# import celery istance
+from app import celery, app
+
 
 
 
@@ -124,49 +127,50 @@ def generate_images(title):
 
 
 
-
+@celery.task
 def generate_and_save_articles(num_articles, topic, post_to_fb):
+    with app.app_context():
     
-    print(post_to_fb)
-    prompt = f"Create {num_articles} titles for articles of a blog on the topic {topic}"
-    # Qui invii il prompt a GPT-3.5 e ottieni una lista di titoli
-    titles = generate_titles(num_articles , topic)
-    print(titles)
+        print(post_to_fb)
+        prompt = f"Create {num_articles} titles for articles of a blog on the topic {topic}"
+        # Qui invii il prompt a GPT-3.5 e ottieni una lista di titoli
+        titles = generate_titles(num_articles , topic)
+        print(titles)
 
-    for title in titles:
-        print(f"Generating article for title: {title}")
-        string_description = generate_article(title)
-        description = wrap_paragraphs(string_description)
+        for title in titles:
+            print(f"Generating article for title: {title}")
+            string_description = generate_article(title)
+            description = wrap_paragraphs(string_description)
 
-        images_prompt = generate_images(title)
-        print(f"Generated images_prompt: {images_prompt}")
-        sender = Sender()
-        sender.send(prompt=images_prompt)
+            images_prompt = generate_images(title)
+            print(f"Generated images_prompt: {images_prompt}")
+            sender = Sender()
+            sender.send(prompt=images_prompt)
 
-        receiver = Receiver(directory='app/static')
-        try:
-            print("Before calling receiver.collecting_result")
-            url, filename = receiver.collecting_result(image_prompt= images_prompt)
-            print("After calling receiver.collecting_result")
-
-            print("Before calling receiver.download_image")
-            images_path_list = receiver.download_image(url, filename)
-            print("After calling receiver.download_image")
-            print(f"Images downloaded: {images_path_list}")
-
-            print("Before calling create_post")
+            receiver = Receiver(directory='app/static')
             try:
-                response, post_url = create_post(title, description, images_path_list, images_prompt)
-            except Exception as e:
-                print(f"Error when calling create_post: {e}")
-            else:
-                print("After calling create_post")
+                print("Before calling receiver.collecting_result")
+                url, filename = receiver.collecting_result(image_prompt= images_prompt)
+                print("After calling receiver.collecting_result")
 
-            if post_to_fb:
-                user_facebook_access_token = current_user.facebook_access_token
-                print(f'User Facebook Access Token: {user_facebook_access_token}')
-                if user_facebook_access_token:
-                    app.main.fb_script.post_to_facebook_page(current_app.config['FB_PAGE_ID'], post_url, user_facebook_access_token)
-        except Exception as e:
-            print(f"Error when posting to Facebook: {str(e)}")
+                print("Before calling receiver.download_image")
+                images_path_list = receiver.download_image(url, filename)
+                print("After calling receiver.download_image")
+                print(f"Images downloaded: {images_path_list}")
+
+                print("Before calling create_post")
+                try:
+                    response, post_url = create_post(title, description, images_path_list, images_prompt)
+                except Exception as e:
+                    print(f"Error when calling create_post: {e}")
+                else:
+                    print("After calling create_post")
+
+                if post_to_fb:
+                    user_facebook_access_token = current_user.facebook_access_token
+                    print(f'User Facebook Access Token: {user_facebook_access_token}')
+                    if user_facebook_access_token:
+                        app.main.fb_script.post_to_facebook_page(current_app.config['FB_PAGE_ID'], post_url, user_facebook_access_token)
+            except Exception as e:
+                print(f"Error when posting to Facebook: {str(e)}")
 
